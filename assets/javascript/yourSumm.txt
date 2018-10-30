@@ -1,0 +1,18 @@
+{
+  "id": 29394585,
+  "accountId": 42573745,
+  "name": "OHMe",
+  "profileIconId": 3633,
+  "revisionDate": 1540835504000,
+  "summonerLevel": 168
+}{
+  "playerId": 29394585,
+  "championId": 76,
+  "championLevel": 6,
+  "championPoints": 187476,
+  "lastPlayTime": 1532064343000,
+  "championPointsSinceLastLevel": 165876,
+  "championPointsUntilNextLevel": 0,
+  "chestGranted": true,
+  "tokensEarned": 2
+}
