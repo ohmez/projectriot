@@ -14,7 +14,7 @@ db.ref().on("value", function(snap) {
     console.log(snap.val());
 
 });
-
+// http://na.op.gg/champion/ajax/statistics/summonerRanking/championId=266
 $(document).ready(function() {
     var newS = $("<div>").attr(
     {style: "margin:auto;position:relative;margin-left:45%;margin-top: 40%;"});
