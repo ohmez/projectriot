@@ -10,6 +10,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   Summoner.associate = function(models) {
     // associations can be defined here
+    Summoner.hasMany(models.Mastery, {
+      onDelete: "cascade"
+    });
   };
   return Summoner;
 };

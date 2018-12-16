@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     summID: DataTypes.STRING,
     playerID: DataTypes.STRING,
     championID: DataTypes.STRING,
+    championName: DataTypes.STRING,
     championLvl: DataTypes.STRING,
     championPoints: DataTypes.STRING,
     lastPlayed: DataTypes.STRING,
@@ -14,6 +15,11 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   Mastery.associate = function(models) {
     // associations can be defined here
+    Mastery.belongsTo(models.Summoner, {
+      foreignKey: {
+        allowNull: false
+      }
+    });
   };
   return Mastery;
 };

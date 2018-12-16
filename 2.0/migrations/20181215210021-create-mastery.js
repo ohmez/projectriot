@@ -17,6 +17,9 @@ module.exports = {
       championID: {
         type: Sequelize.STRING
       },
+      championName: {
+        type: Sequelize.STRING
+      },
       championLvl: {
         type: Sequelize.STRING
       },
