@@ -26,8 +26,9 @@ http://docs.sequelizejs.com/manual/tutorial/migrations.html
 
 Checklist 
 MOdel - started
-View - not started need handlebars views
-Controller - not started api/html routes. 
+View - first "login" page started
+Controller - first login route working next step is masteries. 
 
-Tests??? - need tests to make sure the first ajax to riot api will properly get the data and store it into database. 
+Tests??? - need to get masteries and associate them to summoners; then use the JSON file to update the champion name field. 
+summoner search and database population from results works for first "login". 
 
