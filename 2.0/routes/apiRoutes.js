@@ -53,6 +53,7 @@ module.exports = (app) => {
             if(response.statusCode == 200) {
                 console.log('api masteries worked');
                 console.log(body);
+                res.json(body);
             }
         });
     })
