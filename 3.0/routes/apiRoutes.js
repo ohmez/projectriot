@@ -3,7 +3,7 @@ var keys = require("../keys");
 var key = keys.riot.id;
 var request = require("request");
 var jsonfile = require("../public/champion.json");
-var champions = jsonfile.data;
+var champions = JSON.parse(JSON.stringify(jsonfile.data));
 module.exports = (app) => {
     app.post("/findsumm", (req,res) => {
         var name = req.body.summonerName;
@@ -58,42 +58,35 @@ module.exports = (app) => {
     });
     app.post("/masteries", (req,res) => {
         var sumid = req.body.id;
-        var test = JSON.stringify(champions);
-        test = JSON.parse(test);
-        // console.log(test);
-        for(var prop in test) {
-            console.log(test[prop].key);
-
-        }
-        res.end();
-            
-            // var a = JSON.parse(champions.obj);
-            // console.log(a.key);
-            // if(prop.key === 143) {
-            //     console.log(prop);
-            // }
-    
-        // request('https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/'+sumid+'?api_key='+key,(err,response, body) => {
-        //     if(err) throw err;
-        //     if(response.statusCode == 200) {
-        //         console.log('api masteries worked');
-        //         var masteries = JSON.parse(body);
-        //         console.log(masteries.length);
-        //         console.log(champions);
-        //         var edited = [];
-        //         for(x=0; x<masteries.length; x++) {
-        //             var utcSeconds = masteries[x].lastPlayTime;
-        //             var d = new Date(0);
-        //             d.setUTCMilliseconds(utcSeconds);
-        //             masteries[x].lastPlayTime = d; 
-                    
-        //             edited.push(masteries[x]);
-        //         }
-        //         // {\"playerId\":29394585,\"championId\":76,\"championLevel\":6,\"championPoints\":189612,\"lastPlayTime\":1532064343000,\"championPointsSinceLastLevel\":168012,\"championPointsUntilNextLevel\":0,\"chestGranted\":true,\"tokensEarned\":2}
-
-        //         res.json(body);
-        //     }
-        // });
+        request('https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/'+sumid+'?api_key='+key,(err,response, body) => {
+            if(err) throw err;
+            if(response.statusCode == 200) {
+                console.log('api masteries worked');
+                var masteries = JSON.parse(body);
+                var edited = [];
+                for(x=0; x<masteries.length; x++) {
+                    var utcSeconds = masteries[x].lastPlayTime;
+                    var d = new Date(0);
+                    d.setUTCMilliseconds(utcSeconds);
+                    masteries[x].lastPlayTime = d; 
+                    for(var prop in champions) {
+                        if(Number(champions[prop].key) === masteries[x].championId) {
+                            masteries[x].championName = champions[prop].name;
+                        }
+                    }
+                    edited.push(masteries[x]);
+                }
+                db.Mastery.bulkCreate(edited)
+                .then(()=> {
+                    return db.Mastery.findAll().then(results => res.json(results));
+                })
+                .catch((err) => {
+                    console.log(err,request.body);
+                })
+            } else {
+                console.log(response);
+            }
+        });
     })
     
 };
