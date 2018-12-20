@@ -5,7 +5,7 @@ var request = require("request");
 module.exports = (app) => {
     app.post("/findsumm", (req,res) => {
         var name = req.body.summonerName;
-        request('https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/'+name+'?api_key='+key, (err, response, body) =>{
+        request('https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+name+'?api_key='+key, (err, response, body) =>{
             if(err) throw err;
             if(response.statusCode === 200) {
                 console.log('api summoner call worked');
@@ -53,6 +53,8 @@ module.exports = (app) => {
             if(response.statusCode == 200) {
                 console.log('api masteries worked');
                 console.log(body);
+                // {\"playerId\":29394585,\"championId\":76,\"championLevel\":6,\"championPoints\":189612,\"lastPlayTime\":1532064343000,\"championPointsSinceLastLevel\":168012,\"championPointsUntilNextLevel\":0,\"chestGranted\":true,\"tokensEarned\":2}
+
                 res.json(body);
             }
         });
