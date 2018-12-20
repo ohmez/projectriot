@@ -65,7 +65,7 @@ module.exports = (app) => {
                 var masteries = JSON.parse(body);
                 var edited = [];
                 for(x=0; x<masteries.length; x++) {
-                    var utcSeconds = masteries[x].lastPlayTime;
+                    var utcSeconds = parseInt(masteries[x].lastPlayTime);
                     var d = new Date(0);
                     d.setUTCMilliseconds(utcSeconds);
                     masteries[x].lastPlayTime = d; 
@@ -78,7 +78,8 @@ module.exports = (app) => {
                 }
                 db.Mastery.bulkCreate(edited)
                 .then(()=> {
-                    return db.Mastery.findAll().then(results => res.json(results));
+                    db.Mastery.findAll({where: {summonerId: sumid}})
+                    .then(results => res.json(results));
                 })
                 .catch((err) => {
                     console.log(err,request.body);
