@@ -1,0 +1,13 @@
+<section>
+    <h1>Welcome {{name}}</h1>
+    <h2>Your current level: {{summonerLevel}}</h2>
+    <h3>Your Icon is {{profileIconId}}</h3>
+    <h4>Your account was last played {{revisionDate}}</h4>
+     <form method="POST" action="/masteries">
+        <div>
+            <input type="hidden" name="id" id="id" value="{{id}}">
+            <input type="submit" value="Get Masteries">
+            <p>{{errMsg}}</p>
+        </div>
+    </form>
+</section>

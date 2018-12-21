@@ -1,0 +1,12 @@
+<section>
+    <h1>Welcome {{summName}}</h1>
+    <h2>Your current level: {{summLvl}}</h2>
+    <h3>Your Icon is {{summIcon}}</h3>
+    <h4>Your account was last updated {{revisDate}}</h4>
+     <form method="POST" action="/masteries">
+        <div>
+            <input type="hidden" name="id" id="id" value="{{summID}}">
+            <input type="submit" value="Get Masteries">
+        </div>
+    </form>
+</section>
