@@ -3,11 +3,30 @@
     <h2>Your current level: {{summonerLevel}}</h2>
     <h3>Your Icon is {{profileIconId}}</h3>
     <h4>Your account was last played {{revisionDate}}</h4>
+    {{#if masteries}}
+    <form method="POST" action="/profile">
+        <div>
+            <input type="hidden" name="id" id="id" value="{{id}}">
+            <input type="hidden" name="name" id="name" value="{{name}}">
+            <input type="hidden" name="summonerLevel" id="summonerLevel" value="{{summonerLevel}}">
+            <input type="hidden" name="profileIconId" id="profileIconId" value="{{profileIconId}}">
+            <input type="hidden" name="revisionDate" id="revisionDate" value="{{revisionDate}}">
+            <input type="submit" value="Hide Masteries">
+            <p>{{errMsg}}</p>
+        </div>
+    </form>
+    {{>mastery/masteries}}
+    {{else}}
      <form method="POST" action="/masteries">
         <div>
             <input type="hidden" name="id" id="id" value="{{id}}">
+            <input type="hidden" name="name" id="name" value="{{name}}">
+            <input type="hidden" name="summonerLevel" id="summonerLevel" value="{{summonerLevel}}">
+            <input type="hidden" name="profileIconId" id="profileIconId" value="{{profileIconId}}">
+            <input type="hidden" name="revisionDate" id="revisionDate" value="{{revisionDate}}">
             <input type="submit" value="Get Masteries">
             <p>{{errMsg}}</p>
         </div>
     </form>
+    {{/if}}
 </section>

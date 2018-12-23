@@ -6,5 +6,17 @@ module.exports = (app) => {
             title: "My_Rito"
         });
     });
+    app.post("/profile", (req,res) => {
+        var sum = req.body;
+        res.render("profile", {
+            name: sum.name,
+            summonerLevel: sum.summonerLevel,
+            profileIconId: sum.profileIconId,
+            revisionDate: sum.revisionDate,
+            id: sum.id,
+            title: '' + sum.name + "'s rito"
+        });
+        res.location('/profile');
+    });
     
 };

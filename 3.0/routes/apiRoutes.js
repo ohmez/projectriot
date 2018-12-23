@@ -16,7 +16,6 @@ module.exports = (app) => {
                 var d = new Date(0);
                 d.setUTCMilliseconds(utcSeconds);
                 summoner.revisionDate = d;
-                console.log(summoner);
                 db.Summoner.findAll({where: {id: summoner.id}}).then((summoners) => {
                     if (summoners.length === 0) {
                         db.Summoner.create({
@@ -28,8 +27,16 @@ module.exports = (app) => {
                             id: summoner.id,
                             accountId: summoner.accountId
                         }).then((result) =>{
-                            var summonerInfo = result.dataValues;
-                            res.render('profile',summonerInfo);
+                            var sum = result.dataValues;
+                            res.render('profile',{
+                                name: sum.name,
+                                summonerLevel: sum.summonerLevel,
+                                profileIconId: sum.profileIconId,
+                                revisionDate: sum.revisionDate,
+                                id: sum.id,
+                                title: '' + sum.name + "'s rito"
+                                }
+                            );
                         });
                     } else {
                         db.Summoner.update({
@@ -41,11 +48,17 @@ module.exports = (app) => {
                             id: summoner.id,
                             accountId: summoner.accountId
                         },{where: {id: summoner.id}}).then((upsums) => {
-                            console.log(upsums);
                             if(upsums[0] === 1) {
                                 db.Summoner.findAll({where: {id: summoner.id}}).then((upsum) => {
-                                    var updatedSummoner = upsum[0].dataValues;
-                                    res.render('profile',updatedSummoner);
+                                    var sum = upsum[0].dataValues;
+                                    res.render('profile',{
+                                        name: sum.name,
+                                        summonerLevel: sum.summonerLevel,
+                                        profileIconId: sum.profileIconId,
+                                        revisionDate: sum.revisionDate,
+                                        id: sum.id,
+                                        title: '' + sum.name + "'s rito"
+                                        });
                                 });
                             }
                         });
@@ -57,8 +70,8 @@ module.exports = (app) => {
         });
     });
     app.post("/masteries", (req,res) => {
-        var sumid = req.body.id;
-        request('https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/'+sumid+'?api_key='+key,(err,response, body) => {
+        var sum= req.body;
+        request('https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/'+sum.id+'?api_key='+key,(err,response, body) => {
             if(err) throw err;
             if(response.statusCode == 200) {
                 console.log('api masteries worked');
@@ -66,8 +79,7 @@ module.exports = (app) => {
                 var edited = [];
                 for(x=0; x<masteries.length; x++) {
                     var utcSeconds = parseInt(masteries[x].lastPlayTime);
-                    var d = new Date(0);
-                    d.setUTCMilliseconds(utcSeconds);
+                    var d = new Date(0).setUTCMilliseconds(utcSeconds);
                     masteries[x].lastPlayTime = d; 
                     for(var prop in champions) {
                         if(Number(champions[prop].key) === masteries[x].championId) {
@@ -76,15 +88,64 @@ module.exports = (app) => {
                     }
                     edited.push(masteries[x]);
                 }
-                db.Mastery.bulkCreate(edited)
-                .then(()=> {
-                    db.Mastery.findAll({where: {summonerId: sumid}})
-                    .then(results => res.json(results));
-                })
-                .catch((err) => {
-                    console.log(err,request.body);
-                })
+                db.Mastery.findAll({where: {summonerId: sum.id}}).then((summoners) => {
+                    if (summoners.length === 0) {
+                        // create
+                        db.Mastery.bulkCreate(edited)
+                            .then(() => {
+                                db.Mastery.findAll({ where: { summonerId: sum.id } })
+                                    .then(results => {
+                                        res.render('profile',
+                                            {
+                                                name: sum.name,
+                                                summonerLevel: sum.summonerLevel,
+                                                profileIconId: sum.profileIconId,
+                                                revisionDate: sum.revisionDate,
+                                                id: sum.id,
+                                                masteries: results,
+                                                title: '' + sum.name + "'s rito"
+                                            });
+                                    });
+
+                            })
+                            .catch((err) => {
+                                console.log(err, request.body);
+                            })
+                     } else {
+                         //update
+                         db.Mastery.destroy({
+                             where: {
+                                 summonerId: sum.id
+                             }
+                         })
+                         .then((results) => {
+                             console.log('rows deleted:',results);
+                             db.Mastery.bulkCreate(edited)
+                            .then(() => {
+                                db.Mastery.findAll({ where: { summonerId: sum.id } })
+                                    .then(results => {
+                                        res.render('profile',
+                                            {
+                                                name: sum.name,
+                                                summonerLevel: sum.summonerLevel,
+                                                profileIconId: sum.profileIconId,
+                                                revisionDate: sum.revisionDate,
+                                                id: sum.id,
+                                                masteries: results,
+                                                title: '' + sum.name + "'s rito"
+                                            });
+                                    });
+
+                            })
+                            .catch((err) => {
+                                console.log(err, request.body);
+                            })
+                         })
+                     }
+                });
+                
             } else {
+                // riot api didn't work
                 console.log(response);
             }
         });
