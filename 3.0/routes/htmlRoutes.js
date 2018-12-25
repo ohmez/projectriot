@@ -18,5 +18,7 @@ module.exports = (app) => {
         });
         res.location('/profile');
     });
-    
+    app.get("/profile", (req,res) => {
+        res.render("profile", {errMsg: 'please select summoner first'})
+    });
 };
