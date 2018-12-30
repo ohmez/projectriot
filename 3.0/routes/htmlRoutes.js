@@ -49,17 +49,27 @@ module.exports = (app) => {
                     if(err) throw err;
                     if(response.statusCode === 200) {
                         var a = JSON.parse(body);
-                        sum.solo = a[1];
-                        sum.solo.wr = (a[1].wins/a[1].losses).toFixed(2);
-                        sum.flex = a[0];
-                        sum.flex.wr = (a[0].wins/a[0].losses).toFixed(2);
+                        if(a[0].queueType === 'RANKED_FLEX_SR'){
+                            sum.solo = a[1];
+                            sum.solo.wr = (a[1].wins/a[1].losses).toFixed(2);
+                            sum.solo.games = (a[1].wins + a[1].losses);
+                            sum.flex = a[0];
+                            sum.flex.wr = (a[0].wins/a[0].losses).toFixed(2);
+                            sum.flex.games = (a[0].wins + a[0].losses);
+                        } else {
+                            sum.flex = a[1];
+                            sum.flex.wr = (a[1].wins/a[1].losses).toFixed(2);
+                            sum.flex.games = (a[1].wins + a[1].losses);
+                            sum.solo = a[0];
+                            sum.solo.wr = (a[0].wins/a[0].losses).toFixed(2);
+                            sum.solo.games = (a[0].wins + a[0].losses);
+                        }
                         console.log(sum);
                         request('https://na1.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/RANKED_SOLO_5x5?api_key='+key, (err,response,body) => {
                             if(err) throw err;
                             if(response.statusCode === 200) { 
                                 body = JSON.parse(body);
                                 var masters = body.entries;
-                                console.log(masters[0]);
                                 var masterWr = [];
                                 for (x=0; x<masters.length; x++ ) {
                                     //loop
@@ -74,8 +84,24 @@ module.exports = (app) => {
                                 console.log(total);
                                 console.log('total above then average mster WR');
                                 console.log(avg);
-                                var soloFr = Math.ceil((1-((avg-sum.solo.wr)*5).toFixed(2))*5);
-                                var flexFr = Math.ceil((1-((avg-sum.flex.wr)*5).toFixed(2))*5);
+                                var flexFr; 
+                                var soloFr;
+                                if (sum.solo.wr < 1) {
+                                    soloFr = ((avg - sum.solo.wr) * 100).toFixed(1);
+                                    soloFr += '% Short of a Positive Win Rate'
+                                }
+                                else {
+                                    soloFr = (((avg - sum.solo.wr) + 0.50) * 100).toFixed(1);
+                                    soloFr += '% Win rate is a climbing win rate'
+                                }
+                                if (sum.flex.wr < 1) {
+                                    flexFr = ((avg - sum.flex.wr) * 100).toFixed(1);
+                                    flexFr += '% Short of a Positive Win Rate'
+                                }
+                                else {
+                                    flexFr = (((avg - sum.flex.wr) + 0.50) * 100).toFixed(1);
+                                    flexFr += '% Win rate is a climbing win rate'
+                                }
                                 sum.solo.fr = soloFr;
                                 sum.flex.fr = flexFr;
                                 res.render("qwikstats", sum);
