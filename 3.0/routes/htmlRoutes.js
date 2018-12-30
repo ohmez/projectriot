@@ -126,14 +126,24 @@ module.exports = (app) => {
                                 request('https://na1.api.riotgames.com/lol/match/v4/matchlists/by-account/'+sum.accountId+'?api_key='+key, (err,response,body) => {
                                     if(err) throw err;
                                     if(response.statusCode === 200) {
-                                        body = JSON.parse(body);
-                                        console.log(JSON.stringify(body));
-                                        sum.new = JSON.stringify(body);
+                                        body = JSON.parse(body); //keys-matches, startIndex, endIndex, totalGames
+                                        var matches = body.matches;
+                                        for(x=0; x<matches.length; x++) {
+                                            for(var prop in champions) {
+                                                if(Number(champions[prop].key) === matches[x].champion) {
+                                                    matches[x].championName = champions[prop].name;
+                                                }
+                                            }
+                                        }
+                                        sum.last100 = matches;
+                                        console.log(matches);
+                                       
+                                        console.log(body.matches.length);
                                         res.render("qwikstats", sum);
                                     } else {
                                         res.render('home', {errMsg:'something went wrong with fetching matchlist' + response.statusCode});
                                     }
-                                });
+                                }); // end matchlist api call
                             } else {
                                 res.render('home',{errMsg:'something went wrong with fetching Masters Stats:' + response.statusCode});
                             }
