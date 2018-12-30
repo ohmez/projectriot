@@ -128,17 +128,35 @@ module.exports = (app) => {
                                     if(response.statusCode === 200) {
                                         body = JSON.parse(body); //keys-matches, startIndex, endIndex, totalGames
                                         var matches = body.matches;
+                                        sum.first5 = [];
                                         for(x=0; x<matches.length; x++) {
                                             for(var prop in champions) {
                                                 if(Number(champions[prop].key) === matches[x].champion) {
                                                     matches[x].championName = champions[prop].name;
                                                 }
                                             }
+                                            if(x<5) {
+                                                sum.first5.push(matches[x]);
+                                            }
                                         }
                                         sum.last100 = matches;
-                                        console.log(matches);
-                                       
-                                        console.log(body.matches.length);
+                                        function getMatch(matchNum,cb) {
+                                            request('https://na1.api.riotgames.com/lol/match/v4/matches/'+matchNum+'?api_key='+key, (err,response,body) => {
+                                                if(err) throw err;
+                                                if(response.statusCode === 200) {
+                                                    body = JSON.parse(body);
+                                                    for(var prop in body) {
+                                                        console.log(body[prop], prop, '\n');
+                                                    }
+
+                                                } else {
+                                                    res.render('home',{errMsg:'something went wrong fetching match data'})
+                                                }
+                                            }); // end match api call
+
+                                        }; // end getMatch Function
+                                        console.log(sum.first5);
+                                        getMatch(sum.first5[0].gameId);
                                         res.render("qwikstats", sum);
                                     } else {
                                         res.render('home', {errMsg:'something went wrong with fetching matchlist' + response.statusCode});
