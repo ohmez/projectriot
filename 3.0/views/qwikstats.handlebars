@@ -18,6 +18,7 @@
         </div>
     </div>
         <h4>Any Win Ratio greater than 1 is a climbing WR.</h4>
+        <h4>Currently the average Masters Win Ratio is {{this.masters.avg}}</h4>
     </section>
 <section>
     {{!-- <h3>Your Icon is {{profileIconId}}</h3> --}}
@@ -53,5 +54,17 @@
             {{/if}}
         </div>
     </form>
+    {{/if}}
+</section>
+<section>
+    {{this.new}}
+    if anyything below this works I'm shocked
+    {{#if this.new}}
+    {{#each matches}}
+    {{@key}}: {{this}}
+    {{#each @key}}
+    {{@key}}: {{this}}
+    {{/each}}
+    {{/each}}
     {{/if}}
 </section>

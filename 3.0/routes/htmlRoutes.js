@@ -98,6 +98,7 @@ module.exports = (app) => {
                                 console.log(total);
                                 console.log('total above then average mster WR');
                                 console.log(avg);
+                                sum.masters = {avg:avg};
                                 var flexFr; 
                                 var soloFr;
                                 if(sum.solo) {
@@ -122,18 +123,28 @@ module.exports = (app) => {
                                     }
                                     sum.flex.fr = flexFr;
                                 }
-                                res.render("qwikstats", sum);
+                                request('https://na1.api.riotgames.com/lol/match/v4/matchlists/by-account/'+sum.accountId+'?api_key='+key, (err,response,body) => {
+                                    if(err) throw err;
+                                    if(response.statusCode === 200) {
+                                        body = JSON.parse(body);
+                                        console.log(JSON.stringify(body));
+                                        sum.new = JSON.stringify(body);
+                                        res.render("qwikstats", sum);
+                                    } else {
+                                        res.render('home', {errMsg:'something went wrong with fetching matchlist' + response.statusCode});
+                                    }
+                                });
                             } else {
-                                res.render('home',{errMsg:'something went wrong with fetching Masters Stats:' + response.statusCode})
+                                res.render('home',{errMsg:'something went wrong with fetching Masters Stats:' + response.statusCode});
                             }
-                        }) // end masters stats api call
+                        }); // end masters stats api call
                     } else {
-                        res.render('home', {errMsg:'something went wrong with fetching ranked stats:' + response.statusCode})
+                        res.render('home', {errMsg:'something went wrong with fetching ranked stats:' + response.statusCode});
                     }
-                }) // end ranked league api call
+                }); // end ranked league api call
             } else {
-                res.render('home', {errMsg:'something went wrong fetching that summoner name, check spelling and try again' + response.statusCode})
+                res.render('home', {errMsg:'something went wrong fetching that summoner name, check spelling and try again' + response.statusCode});
             }
-        }) // end summoner api call
+        }); // end summoner api call
     });
-};
+}; // end app exports routing. 
