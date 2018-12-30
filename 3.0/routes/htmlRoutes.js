@@ -49,21 +49,35 @@ module.exports = (app) => {
                     if(err) throw err;
                     if(response.statusCode === 200) {
                         var a = JSON.parse(body);
-                        if(a[0].queueType === 'RANKED_FLEX_SR'){
-                            sum.solo = a[1];
-                            sum.solo.wr = (a[1].wins/a[1].losses).toFixed(2);
-                            sum.solo.games = (a[1].wins + a[1].losses);
-                            sum.flex = a[0];
-                            sum.flex.wr = (a[0].wins/a[0].losses).toFixed(2);
-                            sum.flex.games = (a[0].wins + a[0].losses);
+                        console.log(a);
+                        if(a.length > 1) {
+                            if(a[0].queueType === 'RANKED_FLEX_SR'){
+                                sum.solo = a[1];
+                                sum.solo.wr = (a[1].wins/a[1].losses).toFixed(2);
+                                sum.solo.games = (a[1].wins + a[1].losses);
+                                sum.flex = a[0];
+                                sum.flex.wr = (a[0].wins/a[0].losses).toFixed(2);
+                                sum.flex.games = (a[0].wins + a[0].losses);
+                            } else {
+                                sum.flex = a[1];
+                                sum.flex.wr = (a[1].wins/a[1].losses).toFixed(2);
+                                sum.flex.games = (a[1].wins + a[1].losses);
+                                sum.solo = a[0];
+                                sum.solo.wr = (a[0].wins/a[0].losses).toFixed(2);
+                                sum.solo.games = (a[0].wins + a[0].losses);
+                            }
                         } else {
-                            sum.flex = a[1];
-                            sum.flex.wr = (a[1].wins/a[1].losses).toFixed(2);
-                            sum.flex.games = (a[1].wins + a[1].losses);
-                            sum.solo = a[0];
-                            sum.solo.wr = (a[0].wins/a[0].losses).toFixed(2);
-                            sum.solo.games = (a[0].wins + a[0].losses);
+                            if(a[0].queueType ==='RANKED_FLEX_SR' ) {
+                                sum.flex = a[0];
+                                sum.flex.wr = (a[0].wins/a[0].losses).toFixed(2);
+                                sum.flex.games = (a[0].wins + a[0].losses);
+                            } else {
+                                sum.solo = a[0];
+                                sum.solo.wr = (a[0].wins/a[0].losses).toFixed(2);
+                                sum.solo.games = (a[0].wins + a[0].losses);
+                            }
                         }
+                        
                         console.log(sum);
                         request('https://na1.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/RANKED_SOLO_5x5?api_key='+key, (err,response,body) => {
                             if(err) throw err;
@@ -86,29 +100,39 @@ module.exports = (app) => {
                                 console.log(avg);
                                 var flexFr; 
                                 var soloFr;
-                                if (sum.solo.wr < 1) {
-                                    soloFr = ((avg - sum.solo.wr) * 100).toFixed(1);
-                                    soloFr += '% Short of a Positive Win Rate'
+                                if(sum.solo) {
+                                    if (sum.solo.wr < 1) {
+                                        soloFr = ((avg - sum.solo.wr) * 100).toFixed(1);
+                                        soloFr += '% Short of a Positive Win Rate'
+                                    }
+                                    else {
+                                        soloFr = (((avg - sum.solo.wr) + 0.50) * 100).toFixed(1);
+                                        soloFr += '% Win rate is a climbing win rate'
+                                    }
+                                    sum.solo.fr = soloFr;
                                 }
-                                else {
-                                    soloFr = (((avg - sum.solo.wr) + 0.50) * 100).toFixed(1);
-                                    soloFr += '% Win rate is a climbing win rate'
+                                if(sum.flex) {
+                                    if (sum.flex.wr < 1) {
+                                        flexFr = ((avg - sum.flex.wr) * 100).toFixed(1);
+                                        flexFr += '% Short of a climbing win rate'
+                                    }
+                                    else {
+                                        flexFr = (((avg - sum.flex.wr) + 0.50) * 100).toFixed(1);
+                                        flexFr += '% Win rate is a climbing win rate'
+                                    }
+                                    sum.flex.fr = flexFr;
                                 }
-                                if (sum.flex.wr < 1) {
-                                    flexFr = ((avg - sum.flex.wr) * 100).toFixed(1);
-                                    flexFr += '% Short of a Positive Win Rate'
-                                }
-                                else {
-                                    flexFr = (((avg - sum.flex.wr) + 0.50) * 100).toFixed(1);
-                                    flexFr += '% Win rate is a climbing win rate'
-                                }
-                                sum.solo.fr = soloFr;
-                                sum.flex.fr = flexFr;
                                 res.render("qwikstats", sum);
+                            } else {
+                                res.render('home',{errMsg:'something went wrong with fetching Masters Stats:' + response.statusCode})
                             }
                         }) // end masters stats api call
+                    } else {
+                        res.render('home', {errMsg:'something went wrong with fetching ranked stats:' + response.statusCode})
                     }
                 }) // end ranked league api call
+            } else {
+                res.render('home', {errMsg:'something went wrong fetching that summoner name, check spelling and try again' + response.statusCode})
             }
         }) // end summoner api call
     });
