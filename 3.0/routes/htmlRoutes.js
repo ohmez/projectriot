@@ -140,15 +140,24 @@ module.exports = (app) => {
                                             }
                                         }
                                         sum.last100 = matches;
-                                        function getMatch(matchNum,cb) {
+                                        function getMatch(matchNum,sumId,cb) {
                                             request('https://na1.api.riotgames.com/lol/match/v4/matches/'+matchNum+'?api_key='+key, (err,response,body) => {
                                                 if(err) throw err;
                                                 if(response.statusCode === 200) {
                                                     body = JSON.parse(body);
                                                     for(var prop in body) {
-                                                        console.log(body[prop], prop, '\n');
+                                                        console.log(prop);
                                                     }
-
+                                                    for(x=0; x<body.participantIdentities.length; x++) {
+                                                        if(sumId === body.participantIdentities[x].player.summonerId) {
+                                                            console.log(body.participantIdentities[x]);
+                                                        }
+                                                    } // end loop to find particpantidentity associated with summoner.
+                                                    for(var prop in body.participantIdentities[0]) {
+                                                        console.log(prop);
+                                                    }
+                                                    console.log(sumId);
+                                                    console.log(body.participantIdentities[0].player);
                                                 } else {
                                                     res.render('home',{errMsg:'something went wrong fetching match data'})
                                                 }
@@ -156,7 +165,7 @@ module.exports = (app) => {
 
                                         }; // end getMatch Function
                                         console.log(sum.first5);
-                                        getMatch(sum.first5[0].gameId);
+                                        getMatch(sum.first5[0].gameId, sum.id);
                                         res.render("qwikstats", sum);
                                     } else {
                                         res.render('home', {errMsg:'something went wrong with fetching matchlist' + response.statusCode});
