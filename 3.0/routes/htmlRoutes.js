@@ -49,7 +49,7 @@ module.exports = (app) => {
                     if(err) throw err;
                     if(response.statusCode === 200) {
                         var a = JSON.parse(body);
-                        console.log(a);
+                        // console.log(a);
                         if(a.length > 1) {
                             if(a[0].queueType === 'RANKED_FLEX_SR'){
                                 sum.solo = a[1];
@@ -78,7 +78,7 @@ module.exports = (app) => {
                             }
                         }
                         
-                        console.log(sum);
+                        // console.log(sum);
                         request('https://na1.api.riotgames.com/lol/league/v4/grandmasterleagues/by-queue/RANKED_SOLO_5x5?api_key='+key, (err,response,body) => {
                             if(err) throw err;
                             if(response.statusCode === 200) { 
@@ -95,9 +95,9 @@ module.exports = (app) => {
                                     total += parseInt(masterWr[x]);
                                 }
                                 var avg = total/masterWr.length;
-                                console.log(total);
-                                console.log('total above then average mster WR');
-                                console.log(avg);
+                                // console.log(total);
+                                // console.log('total above then average mster WR');
+                                // console.log(avg);
                                 sum.masters = {avg:avg};
                                 var flexFr; 
                                 var soloFr;
@@ -145,26 +145,62 @@ module.exports = (app) => {
                                                 if(err) throw err;
                                                 if(response.statusCode === 200) {
                                                     body = JSON.parse(body);
-                                                    for(var prop in body) {
-                                                        console.log(prop);
-                                                    }
-                                                    for(x=0; x<body.participantIdentities.length; x++) {
-                                                        if(sumId === body.participantIdentities[x].player.summonerId) {
-                                                            console.log(body.participantIdentities[x]);
-                                                            sum.first5[index].playerNum = body.participantIdentities[x].participantId;
-                                                            console.log(sum.first5[index]);
+                                                    // for(var prop in body) {
+                                                    //     console.log(prop);
+                                                    // }
+                                                    // console.log('thats all the keys of response body');
+                                                    for (var x = 0; x < body.participantIdentities.length; x++) {
+                                                        if (sumId === body.participantIdentities[x].player.summonerId) {
+                                                            sum.first5[index].playerNum = parseInt(body.participantIdentities[x].participantId);
                                                         }
                                                     } // end loop to find particpantidentity associated with summoner.
-                                                    console.log(body.teams);
+                                                    var avKda = [];
+                                                    var totKda = 0;
+                                                    for (var y = 0; y < body.participants.length; y++) {
+                                                        var stats = body.participants[y].stats;
+                                                        avKda.push(Number(stats.kills+stats.assists/stats.deaths));
+                                                        if(stats.deaths === 0) {
+                                                            totKda += Number(stats.kills + stats.assists);
+                                                        } else {
+                                                            totKda += Number(stats.kills+stats.assists/ stats.deaths);
+                                                        }
+                                                        if (Number(body.participants[y].participantId) === Number(sum.first5[index].playerNum)) {
+                                                            // Stats have been found for player in said match
+                                                            sum.first5[index].win = stats.win;
+                                                            sum.first5[index].kills = stats.kills;
+                                                            sum.first5[index].assists = stats.assists;
+                                                            sum.first5[index].deaths = stats.deaths;
+                                                            sum.first5[index].cs = Number(stats.totalMinionsKilled + stats.neutralMinionsKilled);
+                                                            sum.first5[index].vs = stats.visionScore;
+                                                            if(stats.firstBloodKill || stats.firstBlodAssist) {
+                                                                sum.first5[index].fb = true;
+                                                            } else { 
+                                                                sum.first5[index].fb = false;
+                                                            }
+                                                            if(Number(stats.deaths) === 0) {
+                                                                sum.first5[index].kda = Number(stats.kills + stats.assists).toFixed(2);
+                                                            } else {
+                                                                sum.first5[index].kda = Number(Number(stats.kills)+Number(stats.assists) / Number(stats.deaths)).toFixed(2);
+                                                            }
+                                                            console.log('win/loss updated',index, sum.first5[index].win);
+                                                            console.log(stats);
+                                                        }
+                                                    } // end loop for finding if game is a win or loss after identifying playeridentity.
+                                                    sum.first5[index].avg = {kda: Number(Number(totKda)/Number(avKda.length)).toFixed(2)};
+                                                    console.log(avKda);
+                                                    if(index === cb) {
+                                                        res.render('qwikstats',sum);
+                                                        console.log(sum.first5);
+                                                    } else {return sum} // end promise loop, this waits until last item in array returns then sends response to client else returns var sum and keeps looping
                                                 } else {
                                                     res.render('home',{errMsg:'something went wrong fetching match data'})
                                                 }
                                             }); // end match api call
 
                                         }; // end getMatch Function
-                                        console.log(sum.first5);
-                                        getMatch(sum.first5[0].gameId, sum.id,0);
-                                        res.render("qwikstats", sum);
+                                        for(x=0; x<sum.first5.length; x++) {
+                                            getMatch(sum.first5[x].gameId, sum.id, x, sum.first5.length-1);
+                                        } // loops throught the first 5 matches and performs the getmatch function on all the game id's. 
                                     } else {
                                         res.render('home', {errMsg:'something went wrong with fetching matchlist' + response.statusCode});
                                     }
