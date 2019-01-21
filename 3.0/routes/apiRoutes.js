@@ -150,5 +150,12 @@ module.exports = (app) => {
             }
         });
     })
+    app.get("/rank", (req,res) => {
+        var sum = {id:'HBopRONAR_0vscm4rxWUIup1Bi-zdXJQv0S7TkLukR6auCk'}
+       request('https://na1.api.riotgames.com/lol/league/v4/positions/by-summoner/'+sum.id+'?api_key='+key,(err,response,body) => {
+           if(err) throw err;
+           console.log(body);
+       })
+    })
     
 };
